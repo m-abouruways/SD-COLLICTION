@@ -9,15 +9,6 @@
   <artifactId>commons-collections4</artifactId>
   <version>4.6.0-SNAPSHOT</version>
   <name>Apache Commons Collections</name>
-  <inceptionYear>2001</inceptionYear>
-  <description>The Apache Commons Collections package contains types that extend and augment the Java Collections Framework.</description>
-  <url>https://commons.apache.org/proper/commons-collections/</url>
-  
-  <scm>
-    <connection>scm:git:https://gitbox.apache.org/repos/asf/commons-collections.git</connection>
-    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-collections.git</developerConnection>
-    <url>https://gitbox.apache.org/repos/asf?p=commons-collections.git</url>
-  </scm>
 
   <dependencies>
     <dependency>
@@ -31,6 +22,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit-pioneer</groupId>
       <artifactId>junit-pioneer</artifactId>
       <scope>test</scope>
@@ -38,7 +35,7 @@
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
-      <version>${commons.easymock.version}</version>
+      <version>5.6.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -54,40 +51,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.21.0</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
       <version>33.5.0-jre</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-core</artifactId>
-      <version>${commons.jmh.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <commons.componentid>collections</commons.componentid>
-    <commons.module.name>org.apache.commons.collections4</commons.module.name>
-    <commons.jacoco.haltOnFailure>true</commons.jacoco.haltOnFailure>
-    <commons.jacoco.classRatio>0.96</commons.jacoco.classRatio>
-    <commons.jacoco.instructionRatio>0.85</commons.jacoco.instructionRatio>
-    <commons.jacoco.methodRatio>0.85</commons.jacoco.methodRatio>
-    <commons.jacoco.branchRatio>0.78</commons.jacoco.branchRatio>
-    <commons.jacoco.lineRatio>0.85</commons.jacoco.lineRatio>
-    <commons.jacoco.complexityRatio>0.78</commons.jacoco.complexityRatio>
-    <commons.easymock.version>5.6.0</commons.easymock.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <build>
@@ -99,50 +73,57 @@
         <executions>
           <execution>
             <id>prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
+            <goals><goal>prepare-agent</goal></goals>
           </execution>
           <execution>
             <id>report</id>
             <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
+            <goals><goal>report</goal></goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.16.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.1</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <targetClasses>
+            <param>org.apache.commons.collections4**ListUtils</param>
+            <param>org.apache.commons.collections4**MapUtils</param>
+          </targetClasses>
+          <targetTests>
+            <param>org.apache.commons.collections4**</param>
+          </targetTests>
+          
+          <threads>4</threads>
+          <timeoutFactor>1.5</timeoutFactor>
+          <timeoutConstant>5000</timeoutConstant>
+
+          <features>
+            <feature>+CLASSLIMIT(limit[20])</feature>
+          </features>
+
+          <mutators>
+            <mutator>DEFAULTS</mutator>
+          </mutators>
+          <outputFormats>
+            <value>HTML</value>
+          </outputFormats>
+        </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
-        <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/*$*</exclude>
-            <exclude>**/TestUtils.java</exclude>
-            <exclude>**/Abstract*.java</exclude>
-            <exclude>**/BulkTest.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/bin.xml</descriptor>
-            <descriptor>src/assembly/src.xml</descriptor>
-          </descriptors>
-          <tarLongFileMode>gnu</tarLongFileMode>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

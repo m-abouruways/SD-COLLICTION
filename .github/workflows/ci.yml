@@ -19,18 +19,34 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # 1. مرحلة البناء والاختبار وتوليد تقرير JaCoCo
+      # 1. بناء المشروع وتشغيل اختبارات الوحدة العادية (JaCoCo)
       - name: Maven Build and Unit Tests
         run: mvn clean test -Drat.skip=true
 
-      # 2. إضافة خطوة لرفع تقارير التغطية (Artifacts)
+      # 2. تشغيل Pitest بشكل سريع (مستهدف)
+      # أضفنا compile و test-compile لضمان السرعة وعدم إعادة البناء الكامل
+      - name: Run Mutation Testing (Pitest)
+        run: |
+          mvn org.pitest:pitest-maven:mutationCoverage \
+          -Drat.skip=true \
+          -DmaxMutationsPerClass=10 \
+          -Dthreads=4
+
+      # 3. رفع تقارير JaCoCo
       - name: Upload JaCoCo Report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: target/site/jacoco/ # هذا هو المسار الافتراضي لتقارير JaCoCo
+          path: target/site/jacoco/
 
-      # 3. مرحلة الدوكر (تعمل فقط عند التشغيل اليدوي)
+      # 4. رفع تقارير Pitest (لكي تراها في GitHub)
+      - name: Upload Pitest Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pitest-report
+          path: target/pit-reports/
+
+      # 5. مرحلة الدوكر (تعمل فقط عند التشغيل اليدوي)
       - name: Login to DockerHub
         if: github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
