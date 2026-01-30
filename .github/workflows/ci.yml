@@ -1,12 +1,13 @@
-
-name: CI/CD Pipeline - DockerHub Push
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main ]
+  # هذا السطر يسمح لك بتشغيل الـ Push للدوكر يدوياً وقتما تشاء
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -19,16 +20,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build Library with Maven
-        run: mvn clean package -DskipTests -Drat.skip=true
-        
+      # 1. مرحلة البناء والاختبار (تعمل دائماً)
+      - name: Maven Build and Unit Tests
+        run: mvn clean test -Drat.skip=true
+
+      # 2. مرحلة الدوكر (تعمل فقط عند الضغط على الزر يدوياً)
       - name: Login to DockerHub
+        if: github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Docker Image
+        if: github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v5
         with:
           context: .
