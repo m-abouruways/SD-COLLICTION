@@ -3,7 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  # هذا السطر يسمح لك بتشغيل الـ Push للدوكر يدوياً وقتما تشاء
   workflow_dispatch:
 
 jobs:
@@ -20,11 +19,18 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # 1. مرحلة البناء والاختبار (تعمل دائماً)
+      # 1. مرحلة البناء والاختبار وتوليد تقرير JaCoCo
       - name: Maven Build and Unit Tests
         run: mvn clean test -Drat.skip=true
 
-      # 2. مرحلة الدوكر (تعمل فقط عند الضغط على الزر يدوياً)
+      # 2. إضافة خطوة لرفع تقارير التغطية (Artifacts)
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/ # هذا هو المسار الافتراضي لتقارير JaCoCo
+
+      # 3. مرحلة الدوكر (تعمل فقط عند التشغيل اليدوي)
       - name: Login to DockerHub
         if: github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
