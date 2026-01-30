@@ -29,7 +29,6 @@ jobs:
         run: |
           mvn org.pitest:pitest-maven:mutationCoverage \
           -Drat.skip=true \
-          -DmaxMutationsPerClass=10 \
           -Dthreads=4
 
       # 3. رفع تقارير JaCoCo
